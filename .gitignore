@@ -1,0 +1,22 @@
+# .NET build artifacts
+backend/NotesApi/bin/
+backend/NotesApi/obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Environment / secrets
+appsettings.Development.json
+appsettings.Production.json
+.env
+.env.local
+.env.*.local
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
