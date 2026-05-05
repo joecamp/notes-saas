@@ -17,9 +17,10 @@ public class AddContentItemDto
     public string Text { get; set; } = string.Empty;
 }
 
-public class UpdateContentItemTextDto
+public class UpdateContentItemDto
 {
-    [Required]
     [MaxLength(200)]
-    public string Text { get; set; } = string.Empty;
+    public string? Text { get; set; }
+    public bool? IsStarred { get; set; }
+    public int? Order { get; set; }
 }

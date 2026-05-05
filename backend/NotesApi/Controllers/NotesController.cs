@@ -140,13 +140,11 @@ public class NotesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = noteId }, MapToDto(note));
     }
 
-    // Set a ContentItem's Text
-    // PATCH /api/notes/{id}/contentitems/{contentItemId}
-
-    // Toggle the IsStarred property of a ContentItem
+    // Update properties of a ContentItem
     // PATCH /api/notes/{id}/contentitems/{contentItemId}
     [HttpPatch("{noteId}/contentitems/{contentItemId}")]
-    public async Task<ActionResult<NoteDto>> ToggleStarContentItem(int noteId, int contentItemId)
+    public async Task<ActionResult<NoteDto>> UpdateContentItem(
+        int noteId, int contentItemId, [FromBody] UpdateContentItemDto dto)
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
@@ -156,12 +154,21 @@ public class NotesController : ControllerBase
             return NotFound();
 
         var item = note.ContentItems.FirstOrDefault(item => item.Id == contentItemId);
-        if(item is null)
-        {
+        if (item is null)
             return NotFound();
-        }
 
-        item.IsStarred = !item.IsStarred;
+        if(dto.Text is not null)
+        {
+            item.Text = dto.Text;
+        }
+        if (dto.Order is not null)
+        {
+            item.Order = dto.Order.Value;
+        }
+        if (dto.IsStarred is not null)
+        {
+            item.IsStarred = dto.IsStarred.Value;
+        }
 
         await _db.SaveChangesAsync();
 

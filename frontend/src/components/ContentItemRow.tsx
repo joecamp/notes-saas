@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Star, Trash2 } from "lucide-react";
+import { Star, Pencil, Trash2 } from "lucide-react";
 import { ContentItem } from "../types/note";
 
 interface ContentItemRowProps {
   item: ContentItem;
   onToggleStar: (id: number) => void;
+  onEdit: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
-export default function ContentItemRow({ item, onToggleStar, onDelete }: ContentItemRowProps) {
+export default function ContentItemRow({ item, onToggleStar, onEdit, onDelete }: ContentItemRowProps) {
   const [hovered, setHovered] = useState(false);
   const [starHovered, setStarHovered] = useState(false);
 
@@ -26,7 +27,10 @@ export default function ContentItemRow({ item, onToggleStar, onDelete }: Content
         onClick={() => onToggleStar(item.id)}
       />
       <span className="item-text">{item.text}</span>
-      <button className="icon-btn" onClick={() => onDelete(item.id)}>
+      <button className="icon-btn" onClick={() => onEdit(item.id)}>
+        <Pencil size={20} />
+      </button>
+      <button className="icon-btn icon-btn-trash" onClick={() => onDelete(item.id)}>
         <Trash2 size={20} />
       </button>
     </li>

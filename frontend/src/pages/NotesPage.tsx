@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { Note } from "../types/note";
+import { Note, ContentItem } from "../types/note";
 import {
   getNotes,
   createNote,
   deleteNote,
   addContentItem,
   deleteContentItem,
-  toggleStarContentItem,
+  patchContentItem,
 } from "../services/notesApi";
 import NoteCard from "../components/NoteCard";
 import ContentItemRow from "../components/ContentItemRow";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EditContentItemDialog from "../components/EditContentItemDialog";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -20,6 +21,7 @@ export default function NotesPage() {
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newItemText, setNewItemText] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
 
   const selectedNote = notes.find((n) => n.id === selectedId) ?? null;
 
@@ -81,13 +83,33 @@ export default function NotesPage() {
   }
 
   async function handleToggleStarItem(contentItemId: number) {
-    if (!selectedId) return;
+    if (!selectedId || !selectedNote) return;
+    const item = selectedNote.contentItems.find((c) => c.id === contentItemId);
+    if (!item) return;
     try {
       setError(null);
-      const updated = await toggleStarContentItem(selectedId, contentItemId);
+      const updated = await patchContentItem(selectedId, contentItemId, { isStarred: !item.isStarred });
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to toggle star on item");
+    }
+  }
+
+  function handleEditItem(contentItemId: number) {
+    if (!selectedNote) return;
+    const item = selectedNote.contentItems.find((c) => c.id === contentItemId);
+    if (item) setEditingItem(item);
+  }
+
+  async function handleSaveEdit(text: string) {
+    if (!selectedId || !editingItem) return;
+    try {
+      setError(null);
+      const updated = await patchContentItem(selectedId, editingItem.id, { text });
+      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setEditingItem(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update item");
     }
   }
 
@@ -120,7 +142,7 @@ export default function NotesPage() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1 className="app-title">Notes</h1>
-          <form className="new-note-form" onSubmit={handleCreateNote}>
+          <form className="basic-form" onSubmit={handleCreateNote}>
             <input
               type="text"
               placeholder="New note title..."
@@ -183,6 +205,7 @@ export default function NotesPage() {
                     key={item.id}
                     item={item}
                     onToggleStar={handleToggleStarItem}
+                    onEdit={handleEditItem}
                     onDelete={handleDeleteItem}
                   />
                 ))
@@ -208,6 +231,14 @@ export default function NotesPage() {
           </div>
         )}
       </main>
+
+      {editingItem && (
+        <EditContentItemDialog
+          item={editingItem}
+          onSave={handleSaveEdit}
+          onCancel={() => setEditingItem(null)}
+        />
+      )}
 
       {showDeleteDialog && selectedNote && (
         <ConfirmDialog

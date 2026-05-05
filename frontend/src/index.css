@@ -95,13 +95,13 @@ body {
   font-weight: 700;
 }
 
-.new-note-form {
+.basic-form {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.new-note-form input {
+.basic-form input {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--input-border);
@@ -112,7 +112,7 @@ body {
   color: var(--text-primary);
 }
 
-.new-note-form input:focus {
+.basic-form input:focus {
   outline: none;
   border-color: var(--accent);
 }
@@ -251,10 +251,16 @@ body {
   cursor: pointer;
   color: #999;
   padding: 0.25rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
+}
+
+.icon-btn.icon-btn-trash:hover {
+  color: var(--danger);
 }
 
 .icon-btn:hover {
-  color: var(--danger);
+  color: var(--accent);
 }
 
 .item-text {
