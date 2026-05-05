@@ -327,6 +327,10 @@ body {
 .btn-primary:hover {
   background: var(--accent-hover);
 }
+.btn-primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
 
 .btn-delete {
   background: transparent;

@@ -150,7 +150,7 @@ export default function NotesPage() {
               onChange={(e) => setNewNoteTitle(e.target.value)}
               maxLength={200}
             />
-            <button type="submit" className="btn btn-primary btn-block">
+            <button type="submit" disabled={!newNoteTitle.trim()} className="btn btn-primary btn-block">
               + New Note
             </button>
           </form>
