@@ -38,7 +38,7 @@ export default function EditContentItemDialog({ item, onSave, onCancel }: EditCo
             <button type="button" className="btn btn-cancel" onClick={onCancel}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" disabled={!text.trim()} className="btn btn-primary">
               Save
             </button>
           </div>
