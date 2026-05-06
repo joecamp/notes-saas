@@ -320,6 +320,15 @@ body {
   transition: background-color 0.15s;
 }
 
+.btn-square {
+  border-radius: 0px;
+}
+
+.btn-new-note {
+  padding: 1.75rem 2rem;
+  border-radius: 0px;
+}
+
 .btn-primary {
   background: var(--accent);
   color: #fff;

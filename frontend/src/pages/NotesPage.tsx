@@ -8,8 +8,10 @@ import {
   deleteContentItem,
   patchContentItem,
 } from "../services/notesApi";
+
 import NoteCard from "../components/NoteCard";
 import ContentItemRow from "../components/ContentItemRow";
+import CreateNoteDialog from "../components/CreateNoteDialog";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EditContentItemDialog from "../components/EditContentItemDialog";
 
@@ -18,8 +20,8 @@ export default function NotesPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newItemText, setNewItemText] = useState("");
+  const [showCreateNoteDialog, setShowCreateNoteDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
 
@@ -42,16 +44,13 @@ export default function NotesPage() {
     }
   }
 
-  async function handleCreateNote(e: React.FormEvent) {
-    e.preventDefault();
-    const title = newNoteTitle.trim();
-    if (!title) return;
+  async function handleCreateNote(text: string) {
     try {
       setError(null);
-      const created = await createNote({ title });
+      const created = await createNote({ title : text });
       setNotes((prev) => [created, ...prev]);
       setSelectedId(created.id);
-      setNewNoteTitle("");
+      setShowCreateNoteDialog(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create note");
     }
@@ -142,18 +141,6 @@ export default function NotesPage() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1 className="app-title">Notes</h1>
-          <form className="basic-form" onSubmit={handleCreateNote}>
-            <input
-              type="text"
-              placeholder="New note title..."
-              value={newNoteTitle}
-              onChange={(e) => setNewNoteTitle(e.target.value)}
-              maxLength={200}
-            />
-            <button type="submit" disabled={!newNoteTitle.trim()} className="btn btn-primary btn-block">
-              + New Note
-            </button>
-          </form>
         </div>
 
         {error && <div className="error-banner sidebar-error">{error}</div>}
@@ -173,6 +160,11 @@ export default function NotesPage() {
               />
             ))
           )}
+        </div>
+        <div>
+          <button className="btn btn-new-note btn-primary btn-block" onClick={() => setShowCreateNoteDialog(true)}>
+            New Note
+          </button>
         </div>
       </aside>
 
@@ -226,26 +218,37 @@ export default function NotesPage() {
             </form>
           </>
         ) : (
+          /* No Notes to display */
           <div className="no-selection">
             <p>Select a note to view its content.</p>
           </div>
         )}
       </main>
 
-      {editingItem && (
-        <EditContentItemDialog
-          item={editingItem}
-          onSave={handleSaveEdit}
-          onCancel={() => setEditingItem(null)}
+      {/* Create Note Dialog */}
+      {showCreateNoteDialog && (
+        <CreateNoteDialog
+          onConfirm={handleCreateNote}
+          onCancel={() => setShowCreateNoteDialog(false)}
         />
       )}
 
+      {/* Delete Note Dialog */}
       {showDeleteDialog && selectedNote && (
         <ConfirmDialog
           title="Delete Note"
           message={`Are you sure you want to delete "${selectedNote.title}"? This cannot be undone.`}
           onConfirm={() => { handleDeleteNote(selectedNote.id); setShowDeleteDialog(false); }}
           onCancel={() => setShowDeleteDialog(false)}
+        />
+      )}
+      
+      {/* Edit ContentItem Dialog */}
+      {editingItem && (
+        <EditContentItemDialog
+          item={editingItem}
+          onSave={handleSaveEdit}
+          onCancel={() => setEditingItem(null)}
         />
       )}
     </div>
