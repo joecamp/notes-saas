@@ -254,6 +254,12 @@ body {
   padding: 0.25rem;
   padding-left: .75rem;
   padding-right: .75rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.content-item-row.hovered .icon-btn {
+  opacity: 1;
 }
 
 .icon-btn.icon-btn-trash:hover {
