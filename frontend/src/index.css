@@ -223,6 +223,7 @@ body {
   border-bottom: 1px solid var(--border-faint);
   border-radius: 4px;
   transition: background-color 0.1s;
+  user-select: none;
 }
 
 .content-item-row.hovered {
@@ -402,6 +403,11 @@ body {
 }
 .btn-danger:hover {
   opacity: 0.9;
+}
+
+/* --- Other --- */
+.no-select {
+  user-select: none;
 }
 
 /* --- Error banner --- */

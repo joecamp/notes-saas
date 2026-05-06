@@ -140,16 +140,16 @@ export default function NotesPage() {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1 className="app-title">Notes</h1>
+          <h1 className="app-title no-select">Notes</h1>
         </div>
 
         {error && <div className="error-banner sidebar-error">{error}</div>}
 
         <div className="sidebar-notes">
           {loading ? (
-            <p className="sidebar-empty">Loading...</p>
+            <p className="sidebar-empty no-select" >Loading...</p>
           ) : notes.length === 0 ? (
-            <p className="sidebar-empty">No notes yet.</p>
+            <p className="sidebar-empty no-select">No notes yet.</p>
           ) : (
             notes.map((note) => (
               <NoteCard
@@ -173,7 +173,7 @@ export default function NotesPage() {
           <>
             <div className="main-header">
               <div className="main-header-row">
-                <h2 className="main-title">{selectedNote.title}</h2>
+                <h2 className="main-title no-select">{selectedNote.title}</h2>
                 <button
                   className="btn btn-delete"
                   onClick={() => setShowDeleteDialog(true)}
@@ -181,7 +181,7 @@ export default function NotesPage() {
                   Delete Note
                 </button>
               </div>
-              <div className="main-dates">
+              <div className="main-dates no-select">
                 <span>Created {formatDate(selectedNote.createdAt)}</span>
                 <span>·</span>
                 <span>Edited {formatDate(selectedNote.updatedAt)}</span>
@@ -190,7 +190,7 @@ export default function NotesPage() {
 
             <ul className="content-items-list">
               {selectedNote.contentItems.length === 0 ? (
-                <li className="empty-items">No items yet. Add one below.</li>
+                <li className="empty-items no-select">No items yet. Add one below.</li>
               ) : (
                 selectedNote.contentItems.map((item) => (
                   <ContentItemRow
@@ -219,7 +219,7 @@ export default function NotesPage() {
           </>
         ) : (
           /* No Notes to display */
-          <div className="no-selection">
+          <div className="no-selection no-select">
             <p>Select a note to view its content.</p>
           </div>
         )}

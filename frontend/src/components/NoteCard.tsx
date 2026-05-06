@@ -19,8 +19,8 @@ export default function NoteCard({ note, selected, onSelect }: NoteCardProps) {
       className={`note-list-item${selected ? " selected" : ""}`}
       onClick={() => onSelect(note.id)}
     >
-      <div className="note-list-title">{note.title}</div>
-      <div className="note-list-dates">
+      <div className="note-list-title no-select">{note.title}</div>
+      <div className="note-list-dates no-select">
         <span>{note.contentItems.length} Items</span>
         <span>Created {formatDate(note.createdAt)}</span>
         <span>Edited {formatDate(note.updatedAt)}</span>
