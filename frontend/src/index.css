@@ -235,15 +235,22 @@ body {
   flex-shrink: 0;
   color: var(--text-muted);
   transition: color 0.15s;
+  opacity: 0;
+}
+
+.content-item-row.hovered .item-star {
+  opacity: 1;
 }
 
 .item-star-hovered {
   color: #f59e0b;
+  
 }
 
 .item-star-active {
   color: #f59e0b;
   fill: #f59e0b;
+  opacity: 1;
 }
 
 .icon-btn {
