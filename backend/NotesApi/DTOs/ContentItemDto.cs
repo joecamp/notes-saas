@@ -17,7 +17,7 @@ public class AddContentItemDto
     public string Text { get; set; } = string.Empty;
 }
 
-public class UpdateContentItemDto
+public class PatchContentItemDto
 {
     [MaxLength(200)]
     public string? Text { get; set; }

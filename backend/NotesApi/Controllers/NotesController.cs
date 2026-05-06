@@ -31,14 +31,14 @@ public class NotesController : ControllerBase
         return Ok(notes);
     }
 
-    // Get a Note by ID
+    // Get a Note by Id
     // GET /api/notes/{id}
-    [HttpGet("{id}")]
-    public async Task<ActionResult<NoteDto>> GetById(int id)
+    [HttpGet("{noteId}")]
+    public async Task<ActionResult<NoteDto>> GetById(int noteId)
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
-            .FirstOrDefaultAsync(n => n.Id == id);
+            .FirstOrDefaultAsync(n => n.Id == noteId);
 
         if (note is null)
             return NotFound();
@@ -61,17 +61,17 @@ public class NotesController : ControllerBase
         _db.Notes.Add(note);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = note.Id }, MapToDto(note));
+        return CreatedAtAction(nameof(GetById), new { noteId = note.Id }, MapToDto(note));
     }
 
     // Update a Note with new data
     // PUT /api/notes/{id}
-    [HttpPut("{id}")]
-    public async Task<ActionResult<NoteDto>> UpdateNote(int id, UpdateNoteDto dto)
+    [HttpPut("{noteId}")]
+    public async Task<ActionResult<NoteDto>> ReplaceNote(int noteId, UpdateNoteDto dto)
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == id);
+            .FirstOrDefaultAsync(n => n.Id == noteId);
 
         if (note is null)
             return NotFound();
@@ -90,17 +90,46 @@ public class NotesController : ControllerBase
         return Ok(MapToDto(note));
     }
 
-    // Set a Note's Title
+    // Patch properties of a Note
     // PATCH /api/notes/{id}
+    [HttpPatch("{noteId}")]
+    public async Task<ActionResult<NoteDto>> UpdateNote(
+    int noteId, PatchNoteDto dto)
+    {
+        var note = await _db.Notes
+            .Include(n => n.ContentItems.OrderBy(c => c.Order))
+            .FirstOrDefaultAsync(n => n.Id == noteId);
+
+        if (note is null)
+            return NotFound();
+
+        if (dto.Title is not null)
+        {
+            note.Title = dto.Title;
+        }
+        if(dto.ContentItems is not null)
+        {
+            // Remove old content items and replace with new ones
+            _db.ContentItems.RemoveRange(note.ContentItems);
+            note.ContentItems = dto.ContentItems
+                .Select((text, index) => new ContentItem { Text = text, Order = index })
+                .ToList();
+        }
+
+        note.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Ok(MapToDto(note));
+    }
 
     // Delete a Note
     // DELETE /api/notes/{id}
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteNote(int id)
+    [HttpDelete("{noteId}")]
+    public async Task<ActionResult> DeleteNote(int noteId)
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == id);
+            .FirstOrDefaultAsync(n => n.Id == noteId);
 
         if (note is null)
             return NotFound();
@@ -137,14 +166,14 @@ public class NotesController : ControllerBase
         note.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = noteId }, MapToDto(note));
+        return CreatedAtAction(nameof(GetById), new { noteId = noteId }, MapToDto(note));
     }
 
-    // Update properties of a ContentItem
+    // Patch properties of a ContentItem
     // PATCH /api/notes/{id}/contentitems/{contentItemId}
     [HttpPatch("{noteId}/contentitems/{contentItemId}")]
     public async Task<ActionResult<NoteDto>> UpdateContentItem(
-        int noteId, int contentItemId, [FromBody] UpdateContentItemDto dto)
+        int noteId, int contentItemId, PatchContentItemDto dto)
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))

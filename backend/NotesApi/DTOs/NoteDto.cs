@@ -19,13 +19,6 @@ public class CreateNoteDto
     public string Title { get; set; } = string.Empty;
 }
 
-public class UpdateNoteTitleDto
-{
-    [Required]
-    [MaxLength(200)]
-    public string Title { get; set; } = string.Empty;
-}
-
 public class UpdateNoteDto
 {
     [Required]
@@ -33,4 +26,12 @@ public class UpdateNoteDto
     public string Title { get; set; } = string.Empty;
 
     public List<string> ContentItems { get; set; } = new();
+}
+
+public class PatchNoteDto
+{
+    [MaxLength(200)]
+    public string? Title { get; set; }
+
+    public List<string>? ContentItems { get; set; }
 }
