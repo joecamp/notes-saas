@@ -269,9 +269,10 @@ public class NotesController : ControllerBase
         Id = note.Id,
         Title = note.Title,
         ContentItems = note.ContentItems
-            .Select(c => new ContentItemDto { 
-                Id = c.Id, 
-                Text = c.Text, 
+            .OrderBy(c => c.Order)
+            .Select(c => new ContentItemDto {
+                Id = c.Id,
+                Text = c.Text,
                 Order = c.Order,
                 IsStarred = c.IsStarred
             })
