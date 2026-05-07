@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { ContentItem } from "../types/note";
+import { Note } from "../types/note";
 
-interface EditContentItemDialogProps {
-  item: ContentItem;
+interface EditNoteTitleDialogProps {
+  note: Note;
   onSave: (text: string) => void;
   onCancel: () => void;
 }
 
-export default function EditContentItemDialog({ item, onSave, onCancel }: EditContentItemDialogProps) {
-  const [text, setText] = useState(item.text);
+export default function EditNoteTitleDialog({ note, onSave, onCancel }: EditNoteTitleDialogProps) {
+  const [text, setText] = useState(note.title);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +25,7 @@ export default function EditContentItemDialog({ item, onSave, onCancel }: EditCo
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="dialog-title">Edit Item</h3>
+        <h3 className="dialog-title">New Title</h3>
         <form className="basic-form" onSubmit={handleSubmit}>
           <input
             type="text"

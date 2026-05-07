@@ -3,6 +3,7 @@ import { Note, ContentItem } from "../types/note";
 import {
   getNotes,
   createNote,
+  patchNote,
   deleteNote,
   addContentItem,
   deleteContentItem,
@@ -12,6 +13,7 @@ import {
 import NoteCard from "../components/NoteCard";
 import ContentItemRow from "../components/ContentItemRow";
 import CreateNoteDialog from "../components/CreateNoteDialog";
+import EditNoteTitleDialog from "../components/EditNoteTitleDialog";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EditContentItemDialog from "../components/EditContentItemDialog";
 
@@ -22,6 +24,7 @@ export default function NotesPage() {
   const [error, setError] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState("");
   const [showCreateNoteDialog, setShowCreateNoteDialog] = useState(false);
+  const [showEditNoteTitleDialog, setShowEditNoteTitleDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
 
@@ -53,6 +56,18 @@ export default function NotesPage() {
       setShowCreateNoteDialog(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create note");
+    }
+  }
+
+  async function handleEditNoteTitle(text: string) {
+    if (!selectedId) return;
+    try {
+      setError(null);
+      const updated = await patchNote(selectedId, { title: text });
+      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setShowEditNoteTitleDialog(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update note title");
     }
   }
 
@@ -174,12 +189,18 @@ export default function NotesPage() {
             <div className="main-header">
               <div className="main-header-row">
                 <h2 className="main-title no-select">{selectedNote.title}</h2>
-                <button
-                  className="btn btn-delete"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
-                  Delete Note
-                </button>
+                <div>
+                  <button 
+                    className="btn btn-edit"
+                    onClick={() => setShowEditNoteTitleDialog(true)}>
+                    Edit Note Title
+                  </button>
+                  <button
+                    className="btn btn-delete"
+                    onClick={() => setShowDeleteDialog(true)}>
+                    Delete Note
+                  </button>
+                </div>
               </div>
               <div className="main-dates no-select">
                 <span>Created {formatDate(selectedNote.createdAt)}</span>
@@ -230,6 +251,15 @@ export default function NotesPage() {
         <CreateNoteDialog
           onConfirm={handleCreateNote}
           onCancel={() => setShowCreateNoteDialog(false)}
+        />
+      )}
+
+      {/* Edit Note Dialog */}
+      {showEditNoteTitleDialog && selectedNote && (
+        <EditNoteTitleDialog
+          note={selectedNote}
+          onSave={handleEditNoteTitle}
+          onCancel={() => setShowEditNoteTitleDialog(false)}
         />
       )}
 

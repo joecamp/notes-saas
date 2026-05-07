@@ -196,6 +196,13 @@ body {
   margin-bottom: 0.25rem;
 }
 
+.note-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
 .main-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -352,6 +359,15 @@ body {
 .btn-primary:disabled {
   background: #93c5fd;
   cursor: not-allowed;
+}
+
+.btn-edit {
+  background: transparent;
+  color: #fff;
+  white-space: nowrap;
+}
+.btn-edit:hover {
+  background: var(--accent-hover);
 }
 
 .btn-delete {

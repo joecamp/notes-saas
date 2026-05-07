@@ -27,3 +27,8 @@ export interface PatchContentItem {
   isStarred?: boolean;
   order?: number;
 }
+
+export interface PatchNote {
+  title?: string;
+  contentItems?: string[];
+}

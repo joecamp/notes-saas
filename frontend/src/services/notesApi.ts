@@ -1,4 +1,4 @@
-import { Note, CreateNote, UpdateNote, PatchContentItem } from "../types/note";
+import { Note, CreateNote, UpdateNote, PatchNote, PatchContentItem } from "../types/note";
 
 const API_BASE = "http://localhost:5073/api";
 
@@ -39,6 +39,13 @@ export async function updateNote(id: number, note: UpdateNote): Promise<Note> {
   return apiFetch<Note>(`${API_BASE}/notes/${id}`, {
     method: "PUT",
     body: JSON.stringify(note),
+  });
+}
+
+export async function patchNote(id: number, patch: PatchNote): Promise<Note> {
+  return apiFetch<Note>(`${API_BASE}/notes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
   });
 }
 
