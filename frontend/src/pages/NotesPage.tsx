@@ -23,6 +23,7 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showCreateNoteDialog, setShowCreateNoteDialog] = useState(false);
   const [showEditNoteTitleDialog, setShowEditNoteTitleDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -82,7 +83,7 @@ export default function NotesPage() {
     }
   }
 
-  async function handleAddItem(e: React.FormEvent) {
+  async function handleAddContentItem(e: React.FormEvent) {
     e.preventDefault();
     const text = newItemText.trim();
     if (!text || !selectedId) return;
@@ -96,7 +97,7 @@ export default function NotesPage() {
     }
   }
 
-  async function handleToggleStarItem(contentItemId: number) {
+  async function handleToggleStarContentItem(contentItemId: number) {
     if (!selectedId || !selectedNote) return;
     const item = selectedNote.contentItems.find((c) => c.id === contentItemId);
     if (!item) return;
@@ -109,13 +110,13 @@ export default function NotesPage() {
     }
   }
 
-  function handleEditItem(contentItemId: number) {
+  function handleEditContentItem(contentItemId: number) {
     if (!selectedNote) return;
     const item = selectedNote.contentItems.find((c) => c.id === contentItemId);
     if (item) setEditingItem(item);
   }
 
-  async function handleSaveEdit(text: string) {
+  async function handleSaveEditContentItem(text: string) {
     if (!selectedId || !editingItem) return;
     try {
       setError(null);
@@ -127,7 +128,7 @@ export default function NotesPage() {
     }
   }
 
-  async function handleDeleteItem(contentItemId: number) {
+  async function handleDeleteContentItem(contentItemId: number) {
     if (!selectedId) return;
     try {
       setError(null);
@@ -193,12 +194,12 @@ export default function NotesPage() {
                   <button 
                     className="btn btn-edit"
                     onClick={() => setShowEditNoteTitleDialog(true)}>
-                    Edit Note Title
+                    Edit Title
                   </button>
                   <button
                     className="btn btn-delete"
                     onClick={() => setShowDeleteDialog(true)}>
-                    Delete Note
+                    Delete
                   </button>
                 </div>
               </div>
@@ -209,23 +210,34 @@ export default function NotesPage() {
               </div>
             </div>
 
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
             <ul className="content-items-list">
               {selectedNote.contentItems.length === 0 ? (
                 <li className="empty-items no-select">No items yet. Add one below.</li>
               ) : (
-                selectedNote.contentItems.map((item) => (
+                selectedNote.contentItems
+                  .filter((item) => item.text.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((item) => (
                   <ContentItemRow
                     key={item.id}
                     item={item}
-                    onToggleStar={handleToggleStarItem}
-                    onEdit={handleEditItem}
-                    onDelete={handleDeleteItem}
+                    onToggleStar={handleToggleStarContentItem}
+                    onEdit={handleEditContentItem}
+                    onDelete={handleDeleteContentItem}
                   />
                 ))
               )}
             </ul>
 
-            <form className="add-item-form" onSubmit={handleAddItem}>
+            <form className="add-item-form" onSubmit={handleAddContentItem}>
               <input
                 type="text"
                 placeholder="Add a new item..."
@@ -277,7 +289,7 @@ export default function NotesPage() {
       {editingItem && (
         <EditContentItemDialog
           item={editingItem}
-          onSave={handleSaveEdit}
+          onSave={handleSaveEditContentItem}
           onCancel={() => setEditingItem(null)}
         />
       )}

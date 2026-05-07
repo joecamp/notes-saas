@@ -196,6 +196,26 @@ body {
   margin-bottom: 0.25rem;
 }
 
+.search-bar {
+  padding: .75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+}
+
+.search-bar input {
+  flex: 1;
+  border: 0px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .note-header-actions {
   display: flex;
   flex-direction: column;
@@ -265,8 +285,8 @@ body {
   cursor: pointer;
   color: #999;
   padding: 0.25rem;
-  padding-left: .75rem;
-  padding-right: .75rem;
+  padding-left: .5rem;
+  padding-right: .5rem;
   opacity: 0;
   transition: opacity 0.15s;
 }
