@@ -40,8 +40,7 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         return Ok(MapToDto(note));
     }
@@ -73,8 +72,7 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems)
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         note.Title = dto.Title;
         note.UpdatedAt = DateTime.UtcNow;
@@ -100,8 +98,7 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         if (dto.Title is not null)
         {
@@ -131,8 +128,7 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems)
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         _db.Notes.Remove(note);
         await _db.SaveChangesAsync();
@@ -149,8 +145,7 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         var newItem = new ContentItem
         {
@@ -179,12 +174,10 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         var item = note.ContentItems.FirstOrDefault(item => item.Id == contentItemId);
-        if (item is null)
-            return NotFound();
+        if (item is null) return NotFound();
 
         if(dto.Text is not null)
         {
@@ -213,14 +206,10 @@ public class NotesController : ControllerBase
             .Include(n => n.ContentItems)
             .FirstOrDefaultAsync(n => n.Id == noteId);
 
-        if (note is null)
-            return NotFound();
+        if (note is null) return NotFound();
 
         var itemToDelete = note.ContentItems.FirstOrDefault(item => item.Id == contentItemId);
-        if (itemToDelete is null)
-        {
-            return NotFound();
-        }
+        if (itemToDelete is null) return NotFound();
 
         _db.ContentItems.Remove(itemToDelete);
         note.UpdatedAt = DateTime.UtcNow;
@@ -238,6 +227,40 @@ public class NotesController : ControllerBase
         await _db.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    // Reorder a Note's ContentItems
+    // PATCH /api/notes/{noteId}/contentitems/reorder
+    [HttpPatch("{noteId}/contentitems/reorder")]
+    public async Task<ActionResult<NoteDto>> ReorderContentItems(int noteId, ReorderContentItemsDto dto)
+    {
+        var note = await _db.Notes
+            .Include(n => n.ContentItems)
+            .FirstOrDefaultAsync(n => n.Id == noteId);
+
+        if (note is null) return NotFound();
+
+        // Validate ContentItem Ids
+        var noteItemIds = note.ContentItems.Select(c => c.Id).ToHashSet();
+        var sentIds = dto.OrderedIds.ToHashSet();
+        if(!noteItemIds.SetEquals(sentIds))
+        {
+            return BadRequest("Provided IDs do not match the note's content items.");
+        }
+
+        for(int i = 0; i < dto.OrderedIds.Count; i++)
+        {
+            var item = note.ContentItems.FirstOrDefault(c => c.Id == dto.OrderedIds[i]);
+            if(item is not null)
+            {
+                item.Order = i;
+            }
+        }
+
+        note.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Ok(MapToDto(note));
     }
 
     // Helper: convert entity → DTO (keeps internal model separate from API surface)

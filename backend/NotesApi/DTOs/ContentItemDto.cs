@@ -24,3 +24,8 @@ public class PatchContentItemDto
     public bool? IsStarred { get; set; }
     public int? Order { get; set; }
 }
+
+public class ReorderContentItemsDto
+{
+    public List<int> OrderedIds { get; set; } = new();
+}
