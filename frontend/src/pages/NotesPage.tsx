@@ -35,6 +35,10 @@ export default function NotesPage() {
     loadNotes();
   }, []);
 
+  useEffect(() => {
+    setSearchQuery("");
+  }, [selectedId]);
+
   async function loadNotes() {
     try {
       setLoading(true);
