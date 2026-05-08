@@ -34,5 +34,5 @@ export interface PatchContentItem {
 }
 
 export interface PatchReorderContentItems {
-  orderIds: number[];
+  orderedIds: number[];
 }

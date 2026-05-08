@@ -8,10 +8,14 @@ import {
   addContentItem,
   deleteContentItem,
   patchContentItem,
+  patchReorderContentItems,
 } from "../services/notesApi";
+import { DragDropProvider } from "@dnd-kit/react";
+import { move } from "@dnd-kit/helpers";
 
 import NoteCard from "../components/NoteCard";
 import ContentItemRow from "../components/ContentItemRow";
+import DraggableContentItemRow from "../components/DraggableContentItemRow";
 import CreateNoteDialog from "../components/CreateNoteDialog";
 import EditNoteTitleDialog from "../components/EditNoteTitleDialog";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -20,6 +24,7 @@ import EditContentItemDialog from "../components/EditContentItemDialog";
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [draggableItems, setDraggableItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState("");
@@ -37,6 +42,7 @@ export default function NotesPage() {
 
   useEffect(() => {
     setSearchQuery("");
+    setDraggableItems(selectedNote ? [...selectedNote.contentItems] : []);
   }, [selectedId]);
 
   async function loadNotes() {
@@ -109,6 +115,7 @@ export default function NotesPage() {
       setError(null);
       const updated = await patchContentItem(selectedId, contentItemId, { isStarred: !item.isStarred });
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setDraggableItems((prev) => prev.map((c) => c.id === contentItemId ? { ...c, isStarred: !c.isStarred } : c));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to toggle star on item");
     }
@@ -126,9 +133,26 @@ export default function NotesPage() {
       setError(null);
       const updated = await patchContentItem(selectedId, editingItem.id, { text });
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setDraggableItems((prev) => prev.map((c) => c.id === editingItem.id ? { ...c, text } : c));
       setEditingItem(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update item");
+    }
+  }
+
+  async function handleDragEnd(event: any) {
+    if (!selectedId) return;
+    const reordered = move(draggableItems, event);
+    setDraggableItems(reordered);
+    try {
+      setError(null);
+      const updated = await patchReorderContentItems(selectedId, {
+        orderedIds: reordered.map((item) => item.id),
+      });
+      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+    } catch (err) {
+      setDraggableItems(selectedNote ? [...selectedNote.contentItems] : []);
+      setError(err instanceof Error ? err.message : "Failed to reorder items");
     }
   }
 
@@ -223,23 +247,26 @@ export default function NotesPage() {
               />
             </div>
 
-            <ul className="content-items-list">
-              {selectedNote.contentItems.length === 0 ? (
-                <li className="empty-items no-select">No items yet. Add one below.</li>
-              ) : (
-                selectedNote.contentItems
-                  .filter((item) => item.text.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((item) => (
-                  <ContentItemRow
-                    key={item.id}
-                    item={item}
-                    onToggleStar={handleToggleStarContentItem}
-                    onEdit={handleEditContentItem}
-                    onDelete={handleDeleteContentItem}
-                  />
-                ))
-              )}
-            </ul>
+            <DragDropProvider onDragEnd={handleDragEnd}>
+              <ul className="content-items-list">
+                {draggableItems.length === 0 ? (
+                  <li className="empty-items no-select">No items yet. Add one below.</li>
+                ) : (
+                  draggableItems
+                    .filter((item) => item.text.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((item, index) => (
+                    <DraggableContentItemRow
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      onToggleStar={handleToggleStarContentItem}
+                      onEdit={handleEditContentItem}
+                      onDelete={handleDeleteContentItem}
+                    />
+                  ))
+                )}
+              </ul>
+            </DragDropProvider>
 
             <form className="add-item-form" onSubmit={handleAddContentItem}>
               <input
