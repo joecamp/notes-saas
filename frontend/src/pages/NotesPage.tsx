@@ -101,6 +101,7 @@ export default function NotesPage() {
       setError(null);
       const updated = await addContentItem(selectedId, text);
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setDraggableItems([...updated.contentItems]);
       setNewItemText("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add item");
@@ -168,6 +169,7 @@ export default function NotesPage() {
             : n
         )
       );
+      setDraggableItems((prev) => prev.filter((c) => c.id !== contentItemId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete item");
     }
