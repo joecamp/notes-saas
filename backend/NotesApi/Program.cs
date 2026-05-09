@@ -30,6 +30,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Apply any pending EF Core migrations automatically on startup.
+// This means you never need to run "dotnet ef database update" manually —
+// the app creates/updates the schema itself when it first connects.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 // --- Middleware pipeline ---
 
 if (app.Environment.IsDevelopment())

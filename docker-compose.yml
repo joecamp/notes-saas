@@ -1,0 +1,57 @@
+services:
+
+  # --- PostgreSQL database ---
+  # Uses the official postgres:15 image. Data is persisted in a named volume
+  # so it survives container restarts. The healthcheck lets dependent services
+  # wait until postgres is actually ready to accept connections before starting.
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: notesdb
+    ports:
+      - "5432:5432"       # Expose to host so you can still connect with psql/pgAdmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- ASP.NET Core 9 API ---
+  # Built from the Dockerfile in backend/NotesApi. ASP.NET Core containers
+  # default to port 8080, which we map to the host's 5073 — the port the
+  # frontend already expects. The connection string overrides the one in
+  # appsettings.json so the backend reaches "db" (the service name above)
+  # instead of localhost. ASPNETCORE_ENVIRONMENT=Development keeps Swagger on.
+  # depends_on with service_healthy ensures the DB is ready before the app starts.
+  backend:
+    build:
+      context: ./backend/NotesApi
+    ports:
+      - "5073:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=notesdb;Username=postgres;Password=devpass"
+      Kestrel__Endpoints__Http__Url: "http://+:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # --- React / Vite dev server ---
+  # Built from the Dockerfile in frontend. Vite is configured to listen on
+  # 0.0.0.0 so requests from outside the container can reach it. The frontend
+  # makes API calls to http://localhost:5073 — those come from the browser on
+  # the host, not from inside the container, so localhost:5073 still resolves
+  # correctly via the backend's port mapping above.
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
