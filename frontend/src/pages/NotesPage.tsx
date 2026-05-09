@@ -14,7 +14,6 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 
 import NoteCard from "../components/NoteCard";
-import ContentItemRow from "../components/ContentItemRow";
 import DraggableContentItemRow from "../components/DraggableContentItemRow";
 import CreateNoteDialog from "../components/CreateNoteDialog";
 import EditNoteTitleDialog from "../components/EditNoteTitleDialog";
