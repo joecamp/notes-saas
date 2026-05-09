@@ -39,23 +39,40 @@ A full-stack note-taking app built with ASP.NET Core + React + PostgreSQL.
 
 ## Prerequisites
 
+**For Docker Compose:**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+**For manual setup:**
 - [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL 15+](https://www.postgresql.org/download/) (or use Docker: see below)
+- [PostgreSQL 15+](https://www.postgresql.org/download/)
 
 ## Quick Start
 
-### 1. Database (pick one)
+### Option A — Docker Compose (recommended)
 
-**Option A — Docker (recommended):**
+Runs the database, backend, and frontend together in containers. Migrations are applied automatically on startup.
+
 ```bash
-docker run --name notes-db -e POSTGRES_PASSWORD=<your-password> -e POSTGRES_DB=notesdb -p 5432:5432 -d postgres:15
+docker compose up --build
 ```
 
-**Option B — Local PostgreSQL:**
-Create a database called `notesdb` and set the connection string in `appsettings.Development.json` (see below).
+Open http://localhost:5173 in your browser. Swagger is available at http://localhost:5073/swagger.
 
-After either option, create `backend/NotesApi/appsettings.Development.json` with your credentials:
+To run the frontend manually with hot reload while keeping the rest in Docker:
+
+```bash
+docker compose up db backend   # start only the database and API
+cd frontend && npm run dev     # run frontend locally
+```
+
+---
+
+### Option B — Manual Setup
+
+#### 1. Database
+
+Create `backend/NotesApi/appsettings.Development.json` with your credentials:
 ```json
 {
   "ConnectionStrings": {
@@ -64,7 +81,12 @@ After either option, create `backend/NotesApi/appsettings.Development.json` with
 }
 ```
 
-### 2. Backend
+Or spin up PostgreSQL via Docker:
+```bash
+docker run --name notes-db -e POSTGRES_PASSWORD=<your-password> -e POSTGRES_DB=notesdb -p 5432:5432 -d postgres:15
+```
+
+#### 2. Backend
 
 ```bash
 cd backend/NotesApi
@@ -73,9 +95,7 @@ dotnet ef database update        # apply migrations
 dotnet run                       # starts on http://localhost:5073
 ```
 
-Test it: `curl http://localhost:5073/api/notes`
-
-### 3. Frontend
+#### 3. Frontend
 
 ```bash
 cd frontend
