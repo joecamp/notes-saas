@@ -5,16 +5,16 @@ A full-stack note-taking app built with ASP.NET Core + React + PostgreSQL.
 ## Architecture
 
 ```
-┌──────────────────────┐      HTTP/JSON      ┌──────────────────────┐     EF Core     ┌─────────────────┐
-│   React App          │  ◄───────────────►  │   ASP.NET Core 9     │  ◄───────────►  │   PostgreSQL    │
-│   (Vite + TS)        │    localhost:5173   │   Web API            │  localhost:5432 │   Database      │
-│                      │                     │                      │                 │                 │
-│  - Note list         │                     │  - NotesController   │                 │  - Notes        │
-│  - Note CRUD         │                     │  - EF Core           │                 │  - ContentItems │
-│  - ContentItem CRUD  │                     │  - DTOs / Validation │                 │  (1:many)       │
-│  - Drag/drop reorder │                     │                      │                 │                 │
-│  - Search / filter   │                     │                      │                 │                 │
-└──────────────────────┘                     └──────────────────────┘                 └─────────────────┘
+┌──────────────────────┐     HTTP/JSON     ┌──────────────────────┐     EF Core    ┌─────────────────┐
+│   React App          │ ◄───────────────► │   ASP.NET Core 9     │ ◄────────────► │   PostgreSQL    │
+│   (Vite + TS)        │   localhost:5173  │   Web API            │ localhost:5432 │   Database      │
+│                      │                   │                      │                │                 │
+│  - Note list         │                   │  - NotesController   │                │  - Notes        │
+│  - Note CRUD         │                   │  - EF Core           │                │  - ContentItems │
+│  - ContentItem CRUD  │                   │  - DTOs / Validation │                │  (1:many)       │
+│  - Drag/drop reorder │                   │                      │                │                 │
+│  - Search / filter   │                   │                      │                │                 │
+└──────────────────────┘                   └──────────────────────┘                └─────────────────┘
 ```
 
 ### Data Model
