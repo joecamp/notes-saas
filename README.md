@@ -1,24 +1,45 @@
-# Notes SaaS — Phase 1: Walking Skeleton
+# Notes SaaS
 
 A full-stack note-taking app built with ASP.NET Core + React + PostgreSQL.
 
 ## Architecture
 
 ```
-┌─────────────────┐       HTTP/JSON       ┌─────────────────┐       EF Core       ┌─────────────────┐
-│   React App     │  ◄──────────────────►  │  ASP.NET Core   │  ◄───────────────►  │   PostgreSQL    │
-│   (Vite + TS)   │     localhost:5173     │   Web API        │    localhost:5432   │   Database      │
-│                 │         ──►            │                 │        ──►          │                 │
-│  - Note list    │   GET /api/notes       │  - Controllers  │   SELECT * FROM     │  - Notes table  │
-│  - Create form  │   POST /api/notes      │  - EF Core      │     notes           │                 │
-│  - Edit/Delete  │   PUT /api/notes/{id}  │  - Validation   │   INSERT INTO ...   │                 │
-│                 │   DELETE /api/notes/{id}│                 │                     │                 │
-└─────────────────┘                        └─────────────────┘                     └─────────────────┘
+┌──────────────────────┐      HTTP/JSON      ┌──────────────────────┐     EF Core     ┌─────────────────┐
+│   React App          │  ◄───────────────►  │   ASP.NET Core 9     │  ◄───────────►  │   PostgreSQL    │
+│   (Vite + TS)        │    localhost:5173   │   Web API            │  localhost:5432 │   Database      │
+│                      │                     │                      │                 │                 │
+│  - Note list         │                     │  - NotesController   │                 │  - Notes        │
+│  - Note CRUD         │                     │  - EF Core           │                 │  - ContentItems │
+│  - ContentItem CRUD  │                     │  - DTOs / Validation │                 │  (1:many)       │
+│  - Drag/drop reorder │                     │                      │                 │                 │
+│  - Search / filter   │                     │                      │                 │                 │
+└──────────────────────┘                     └──────────────────────┘                 └─────────────────┘
 ```
+
+### Data Model
+
+- **Note**: `Id`, `Title`, `CreatedAt`, `UpdatedAt` — has many `ContentItems`
+- **ContentItem**: `Id`, `Text`, `Order`, `IsStarred`, `NoteId` (ForeignKey, cascade delete)
+
+### API Endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET    | `/api/notes` | List all notes with content items |
+| GET    | `/api/notes/{noteId}` | Get a single note |
+| POST   | `/api/notes` | Create a note |
+| PUT    | `/api/notes/{noteId}` | Replace note title + all content items |
+| PATCH  | `/api/notes/{noteId}` | Update note title and/or content items |
+| DELETE | `/api/notes/{noteId}` | Delete a note |
+| POST   | `/api/notes/{noteId}/contentitems` | Add a content item |
+| PATCH  | `/api/notes/{noteId}/contentitems/{itemId}` | Update content item properties |
+| PATCH  | `/api/notes/{noteId}/contentitems/reorder` | Reorder content items |
+| DELETE | `/api/notes/{noteId}/contentitems/{itemId}` | Remove a content item |
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8)
+- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [Node.js 18+](https://nodejs.org/)
 - [PostgreSQL 15+](https://www.postgresql.org/download/) (or use Docker: see below)
 
@@ -70,28 +91,37 @@ Open http://localhost:5173 in your browser.
 notes-saas/
 ├── backend/
 │   └── NotesApi/
-│       ├── Controllers/         # API endpoints
-│       │   └── NotesController.cs
-│       ├── Models/              # Database entities
-│       │   └── Note.cs
-│       ├── Data/                # EF Core DbContext
-│       │   └── AppDbContext.cs
-│       ├── DTOs/                # Request/response shapes
-│       │   └── NoteDto.cs
-│       ├── Program.cs           # App entry point & config
+│       ├── Controllers/
+│       │   └── NotesController.cs              # All API endpoints
+│       ├── Models/
+│       │   ├── Note.cs                         # Note entity
+│       │   └── ContentItem.cs                  # ContentItem entity
+│       ├── Data/
+│       │   └── AppDbContext.cs                 # EF Core DbContext
+│       ├── DTOs/
+│       │   ├── NoteDto.cs                      # Note request/response shapes
+│       │   └── ContentItemDto.cs               # ContentItem request/response shapes
+│       ├── Migrations/                         # EF Core migrations
+│       ├── Program.cs                          # App entry point & config
 │       ├── appsettings.json
 │       └── NotesApi.csproj
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # Reusable UI pieces
-│   │   │   └── NoteCard.tsx
-│   │   ├── pages/               # Page-level components
-│   │   │   └── NotesPage.tsx
-│   │   ├── services/            # API call functions
-│   │   │   └── notesApi.ts
-│   │   ├── types/               # TypeScript interfaces
-│   │   │   └── note.ts
+│   │   ├── components/
+│   │   │   ├── NoteCard.tsx                    # Sidebar note list item
+│   │   │   ├── ContentItemRow.tsx              # Static content item row
+│   │   │   ├── DraggableContentItemRow.tsx     # Drag/drop content item row
+│   │   │   ├── ConfirmDialog.tsx               # Generic confirmation modal
+│   │   │   ├── CreateNoteDialog.tsx            # New note modal
+│   │   │   ├── EditNoteTitleDialog.tsx         # Edit note title modal
+│   │   │   └── EditContentItemDialog.tsx       # Edit content item modal
+│   │   ├── pages/
+│   │   │   └── NotesPage.tsx                   # Main page — all state and handlers
+│   │   ├── services/
+│   │   │   └── notesApi.ts                     # All fetch calls to the backend
+│   │   ├── types/
+│   │   │   └── note.ts                         # TypeScript interfaces
 │   │   ├── App.tsx
 │   │   └── main.tsx
 │   ├── index.html
@@ -102,9 +132,13 @@ notes-saas/
 └── README.md
 ```
 
-## Phase Roadmap
+## Roadmap
 
-- [x] **Phase 1** — Walking skeleton (list, create, edit, delete notes)
-- [ ] **Phase 2** — Full CRUD polish (validation, error handling, loading states)
-- [ ] **Phase 3** — Authentication (ASP.NET Identity + JWT)
-- [ ] **Phase 4** — Features (search, tags/folders, sharing, dashboard)
+- [x] Walking skeleton (list, create, edit, delete notes)
+- [x] ContentItems CRUD (add, edit, delete, star)
+- [x] ContentItem drag/drop reordering
+- [x] Note title editing
+- [x] Search/filter content items
+- [ ] Authentication (ASP.NET Identity + JWT)
+- [ ] Tags / folders
+- [ ] Sharing & collaboration
