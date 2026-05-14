@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using NotesApi.Data;
 using NotesApi.DTOs;
 using NotesApi.Models;
@@ -8,9 +10,15 @@ namespace NotesApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class NotesController : ControllerBase
 {
     private readonly AppDbContext _db;
+
+    private string GetUserId()
+    {
+        return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value;
+    }
 
     public NotesController(AppDbContext db)
     {
@@ -22,7 +30,9 @@ public class NotesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<NoteDto>>> GetAll()
     {
+        var userId = GetUserId();
         var notes = await _db.Notes
+            .Where(n => n.UserId == userId)
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
             .OrderByDescending(n => n.UpdatedAt)
             .Select(n => MapToDto(n))
@@ -38,7 +48,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -52,6 +62,7 @@ public class NotesController : ControllerBase
     {
         var note = new Note
         {
+            UserId = GetUserId(),
             Title = dto.Title,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -70,7 +81,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -96,7 +107,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -126,7 +137,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -143,7 +154,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -172,7 +183,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems.OrderBy(c => c.Order))
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -204,7 +215,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
@@ -236,7 +247,7 @@ public class NotesController : ControllerBase
     {
         var note = await _db.Notes
             .Include(n => n.ContentItems)
-            .FirstOrDefaultAsync(n => n.Id == noteId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.UserId == GetUserId());
 
         if (note is null) return NotFound();
 
