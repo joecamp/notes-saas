@@ -190,12 +190,12 @@ export default function NotesPage({ onLogout }: Props) {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1 className="app-title no-select">Notes</h1>
+          <h1 className="app-title no-select">Noteworthy</h1>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <p className="no-select" style={{ fontSize: "0.75rem", margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <p className="email no-select">
               {getEmail()}
             </p>
-            <button className="btn btn-delete" onClick={onLogout}>Logout</button>
+            <button className="btn btn-logout" onClick={onLogout}>Logout</button>
           </div>
         </div>
 

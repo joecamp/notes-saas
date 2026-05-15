@@ -11,12 +11,12 @@ export default function AuthPage({ onAuthSuccess }: Props) {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    setErrors([]);
     setLoading(true);
 
     try {
@@ -28,53 +28,62 @@ export default function AuthPage({ onAuthSuccess }: Props) {
       }
       onAuthSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setErrors(message.split("\n"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: "100px auto", padding: "0 1rem" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Notes</h1>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1 className="app-title no-select">Noteworthy</h1>
 
-      <div style={{ display: "flex", marginBottom: "1.5rem" }}>
-        <button
-          onClick={() => { setMode("login"); setError(null); }}
-          style={{ flex: 1, padding: "0.5rem", fontWeight: mode === "login" ? "bold" : "normal" }}
-        >
-          Login
-        </button>
-        <button
-          onClick={() => { setMode("register"); setError(null); }}
-          style={{ flex: 1, padding: "0.5rem", fontWeight: mode === "register" ? "bold" : "normal" }}
-        >
-          Register
-        </button>
+        <div className="auth-tabs">
+          <button
+            className={`auth-tab ${mode === "login" ? "auth-tab-active" : ""}`}
+            onClick={() => { setMode("login"); setErrors([]); }}
+          >
+            Login
+          </button>
+          <button
+            className={`auth-tab ${mode === "register" ? "auth-tab-active" : ""}`}
+            onClick={() => { setMode("register"); setErrors([]); }}
+          >
+            Register
+          </button>
+        </div>
+
+        <form className="basic-form" onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+          {errors.length > 0 && (
+            <div className="error-banner">
+              {errors.length === 1 ? errors[0] : (
+                <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                  {errors.map((e, i) => <li key={i}>{e}</li>)}
+                </ul>
+              )}
+            </div>
+          )}
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? "..." : mode === "login" ? "Login" : "Register"}
+          </button>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-
-        {error && <p style={{ color: "red", margin: 0 }}>{error}</p>}
-
-        <button type="submit" disabled={loading}>
-          {loading ? "..." : mode === "login" ? "Login" : "Register"}
-        </button>
-      </form>
     </div>
   );
 }

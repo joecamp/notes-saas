@@ -5,6 +5,17 @@ const API_BASE = "http://localhost:5073/api";
 const TOKEN_KEY = "auth_token";
 const EMAIL_KEY = "auth_email";
 
+const IDENTITY_ERRORS: Record<string, string> = {
+  DuplicateUserName:                "An account with this email already exists.",
+  DuplicateEmail:                   "An account with this email already exists.",
+  PasswordTooShort:                 "Password must be at least 6 characters.",
+  PasswordRequiresDigit:            "Password must contain at least one number.",
+  PasswordRequiresUpper:            "Password must contain at least one uppercase letter.",
+  PasswordRequiresLower:            "Password must contain at least one lowercase letter.",
+  PasswordRequiresNonAlphanumeric:  "Password must contain at least one symbol (!@#$ etc).",
+  PasswordRequiresUniqueChars:      "Password must contain more unique characters.",
+};
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -34,8 +45,12 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Login failed ${response.status}: ${message}`);
+    let message = "Invalid email or password.";
+    try {
+      const body = await response.json();
+      if (body.message) message = body.message.trim();
+    } catch { /* response wasn't JSON */ }
+    throw new Error(message);
   }
 
   const data: AuthResponse = await response.json();
@@ -52,7 +67,13 @@ export async function register(request: RegisterRequest): Promise<void> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Registration failed ${response.status}: ${message}`);
+    let messages = ["Registration failed. Please try again."];
+    try {
+      const errors: { code: string; description: string }[] = await response.json();
+      if (Array.isArray(errors)) {
+        messages = errors.map(e => IDENTITY_ERRORS[e.code] ?? e.description);
+      }
+    } catch { /* response wasn't JSON */ }
+    throw new Error(messages.join("\n"));
   }
 }

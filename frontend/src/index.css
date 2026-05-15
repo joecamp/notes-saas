@@ -91,14 +91,24 @@ body {
 }
 
 .app-title {
-  font-size: 1.25rem;
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 1.5rem;
   font-weight: 700;
+}
+
+.email {
+  font-size: 0.75rem;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .basic-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.0rem;
 }
 
 .basic-form input {
@@ -399,6 +409,17 @@ body {
   background: var(--danger-bg);
 }
 
+.btn-logout {
+  background: transparent;
+  color: var(--danger);
+  white-space: nowrap;
+
+  padding: 0.5rem .5rem;
+}
+.btn-logout:hover {
+  background: var(--danger-bg);
+}
+
 /* --- Dialog --- */
 .dialog-overlay {
   position: fixed;
@@ -456,6 +477,59 @@ body {
 /* --- Other --- */
 .no-select {
   user-select: none;
+}
+
+/* --- Auth page --- */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.auth-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 500px;
+  max-width: calc(100vw - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.auth-card .app-title {
+  text-align: center;
+}
+
+.auth-tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.auth-tab:hover {
+  background: var(--bg-hover);
+}
+
+.auth-tab.auth-tab-active {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* --- Error banner --- */
