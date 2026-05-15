@@ -8,11 +8,6 @@ RUN dotnet restore
 COPY . .
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
-
-# dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 9.0.0
-# dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.0
-
-
 # Stage 2 — runtime
 # The ASP.NET runtime image is much smaller than the SDK (~220 MB vs ~800 MB)
 # because it only contains what's needed to run the app, not to build it.
