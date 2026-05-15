@@ -43,13 +43,13 @@ export default function AuthPage({ onAuthSuccess }: Props) {
         <div className="auth-tabs">
           <button
             className={`auth-tab ${mode === "login" ? "auth-tab-active" : ""}`}
-            onClick={() => { setMode("login"); setErrors([]); }}
+            onClick={() => { setMode("login"); setErrors([]); setEmail(""); setPassword(""); }}
           >
             Login
           </button>
           <button
             className={`auth-tab ${mode === "register" ? "auth-tab-active" : ""}`}
-            onClick={() => { setMode("register"); setErrors([]); }}
+            onClick={() => { setMode("register"); setErrors([]); setEmail(""); setPassword(""); }}
           >
             Register
           </button>
@@ -83,6 +83,11 @@ export default function AuthPage({ onAuthSuccess }: Props) {
             {loading ? "..." : mode === "login" ? "Login" : "Register"}
           </button>
         </form>
+
+        <div className="auth-footer">
+          <a href="https://github.com/joecamp/notes-saas" target="_blank" rel="noreferrer">About</a>
+          <p>Created by Joseph Campanelli</p>
+        </div>
       </div>
     </div>
   );

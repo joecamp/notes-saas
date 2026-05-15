@@ -492,6 +492,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 2rem;
+  padding-bottom: .5rem;
   width: 500px;
   max-width: calc(100vw - 2rem);
   display: flex;
@@ -530,6 +531,31 @@ body {
 .auth-tab.auth-tab-active {
   background: var(--accent);
   color: #fff;
+}
+
+.auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.auth-footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  color: var(--accent);
+}
+
+.auth-footer p {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: .25rem;
 }
 
 /* --- Error banner --- */
