@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Note, ContentItem } from "../types/note";
+import { getEmail } from "../services/authApi";
 import {
   getNotes,
   createNote,
@@ -20,7 +21,11 @@ import EditNoteTitleDialog from "../components/EditNoteTitleDialog";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EditContentItemDialog from "../components/EditContentItemDialog";
 
-export default function NotesPage() {
+interface Props {
+  onLogout: () => void;
+}
+
+export default function NotesPage({ onLogout }: Props) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draggableItems, setDraggableItems] = useState<ContentItem[]>([]);
@@ -186,6 +191,12 @@ export default function NotesPage() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1 className="app-title no-select">Notes</h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p className="no-select" style={{ fontSize: "0.75rem", margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {getEmail()}
+            </p>
+            <button className="btn btn-delete" onClick={onLogout}>Logout</button>
+          </div>
         </div>
 
         {error && <div className="error-banner sidebar-error">{error}</div>}

@@ -1,11 +1,17 @@
 import { Note, CreateNote, UpdateNote, PatchNote, PatchContentItem, PatchReorderContentItems } from "../types/note";
+import { getToken } from "./authApi";
 
 const API_BASE = "http://localhost:5073/api";
 
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
   const response = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
   });
 
   if (!response.ok) {
