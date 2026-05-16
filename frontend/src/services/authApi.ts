@@ -1,6 +1,6 @@
 import { LoginRequest, RegisterRequest, AuthResponse } from "../types/auth";
 
-const API_BASE = "http://localhost:5073/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const TOKEN_KEY = "auth_token";
 const EMAIL_KEY = "auth_email";

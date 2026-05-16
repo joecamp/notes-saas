@@ -9,7 +9,6 @@ backend/NotesApi/obj/
 # Environment / secrets
 appsettings.Development.json
 appsettings.Production.json
-.env
 .env.local
 .env.*.local
 
