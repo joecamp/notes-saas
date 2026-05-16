@@ -11,6 +11,7 @@ export default function AuthPage({ onAuthSuccess }: Props) {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -23,6 +24,11 @@ export default function AuthPage({ onAuthSuccess }: Props) {
       if (mode === "login") {
         await login({ email, password });
       } else {
+        if (password !== confirmPassword) {
+          setErrors(["Passwords do not match."]);
+          setLoading(false);
+          return;
+        }
         await register({ email, password });
         await login({ email, password });
       }
@@ -33,6 +39,11 @@ export default function AuthPage({ onAuthSuccess }: Props) {
     } finally {
       setLoading(false);
     }
+  }
+
+  function clearInput() {
+    setPassword("");
+    setConfirmPassword("");
   }
 
   return (
@@ -46,13 +57,13 @@ export default function AuthPage({ onAuthSuccess }: Props) {
         <div className="auth-tabs">
           <button
             className={`auth-tab ${mode === "login" ? "auth-tab-active" : ""}`}
-            onClick={() => { setMode("login"); setErrors([]); setEmail(""); setPassword(""); }}
+            onClick={() => { setMode("login"); setErrors([]); clearInput(); }}
           >
             Login
           </button>
           <button
             className={`auth-tab ${mode === "register" ? "auth-tab-active" : ""}`}
-            onClick={() => { setMode("register"); setErrors([]); setEmail(""); setPassword(""); }}
+            onClick={() => { setMode("register"); setErrors([]); clearInput(); }}
           >
             Register
           </button>
@@ -73,6 +84,15 @@ export default function AuthPage({ onAuthSuccess }: Props) {
             onChange={e => setPassword(e.target.value)}
             required
           />
+          {mode === "register" && (
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+            />
+          )}
           {errors.length > 0 && (
             <div className="error-banner">
               {errors.length === 1 ? errors[0] : (
