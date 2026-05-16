@@ -24,6 +24,13 @@ A full-stack note-taking app built with ASP.NET Core + React + PostgreSQL.
 
 ### API Endpoints
 
+#### Auth
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST   | `/api/auth/register` | Create a new account |
+| POST   | `/api/auth/login` | Login and receive a JWT token |
+
+#### Notes (requires Bearer token)
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET    | `/api/notes` | List all notes with content items |
@@ -112,15 +119,18 @@ notes-saas/
 ├── backend/
 │   └── NotesApi/
 │       ├── Controllers/
-│       │   └── NotesController.cs              # All API endpoints
+│       │   ├── NotesController.cs              # Notes endpoints (requires auth)
+│       │   └── AuthController.cs               # Register / login endpoints
 │       ├── Models/
 │       │   ├── Note.cs                         # Note entity
-│       │   └── ContentItem.cs                  # ContentItem entity
+│       │   ├── ContentItem.cs                  # ContentItem entity
+│       │   └── ApplicationUser.cs              # ASP.NET Identity user
 │       ├── Data/
-│       │   └── AppDbContext.cs                 # EF Core DbContext
+│       │   └── AppDbContext.cs                 # EF Core DbContext (extends IdentityDbContext)
 │       ├── DTOs/
 │       │   ├── NoteDto.cs                      # Note request/response shapes
-│       │   └── ContentItemDto.cs               # ContentItem request/response shapes
+│       │   ├── ContentItemDto.cs               # ContentItem request/response shapes
+│       │   └── AuthDtos.cs                     # Register / login / token shapes
 │       ├── Migrations/                         # EF Core migrations
 │       ├── Program.cs                          # App entry point & config
 │       ├── appsettings.json
@@ -137,11 +147,14 @@ notes-saas/
 │   │   │   ├── EditNoteTitleDialog.tsx         # Edit note title modal
 │   │   │   └── EditContentItemDialog.tsx       # Edit content item modal
 │   │   ├── pages/
-│   │   │   └── NotesPage.tsx                   # Main page — all state and handlers
+│   │   │   ├── NotesPage.tsx                   # Main page — all state and handlers
+│   │   │   └── AuthPage.tsx                    # Login / register page
 │   │   ├── services/
-│   │   │   └── notesApi.ts                     # All fetch calls to the backend
+│   │   │   ├── notesApi.ts                     # All fetch calls to the notes backend
+│   │   │   └── authApi.ts                      # Login, register, token storage
 │   │   ├── types/
-│   │   │   └── note.ts                         # TypeScript interfaces
+│   │   │   ├── note.ts                         # TypeScript interfaces for notes
+│   │   │   └── auth.ts                         # TypeScript interfaces for auth
 │   │   ├── App.tsx
 │   │   └── main.tsx
 │   ├── index.html
@@ -159,6 +172,6 @@ notes-saas/
 - [x] ContentItem drag/drop reordering
 - [x] Note title editing
 - [x] Search/filter content items
-- [ ] Authentication (ASP.NET Identity + JWT)
+- [x] Authentication (ASP.NET Identity + JWT)
 - [ ] Tags / folders
 - [ ] Sharing & collaboration
