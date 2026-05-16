@@ -96,6 +96,10 @@ body {
   font-weight: 700;
 }
 
+.app-subtitle {
+  font-size: 1rem;
+}
+
 .email {
   font-size: 0.75rem;
   margin: 0;
@@ -502,6 +506,13 @@ body {
 
 .auth-card .app-title {
   text-align: center;
+  padding-bottom: .25rem;
+}
+
+.auth-card .app-subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  font-style: italic;
 }
 
 .auth-tabs {

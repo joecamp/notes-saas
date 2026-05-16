@@ -38,7 +38,10 @@ export default function AuthPage({ onAuthSuccess }: Props) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="app-title no-select">Noteworthy</h1>
+        <div>
+          <h1 className="app-title no-select">Noteworthy</h1>
+          <p className="app-subtitle no-select">a no-nonsense notes taking app</p>
+        </div>
 
         <div className="auth-tabs">
           <button
