@@ -10,6 +10,7 @@ import {
   deleteContentItem,
   patchContentItem,
   patchReorderContentItems,
+  UnauthorizedError,
 } from "../services/notesApi";
 import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
@@ -40,6 +41,11 @@ export default function NotesPage({ onLogout }: Props) {
 
   const selectedNote = notes.find((n) => n.id === selectedId) ?? null;
 
+  function handleApiError(err: unknown, fallback: string) {
+    if (err instanceof UnauthorizedError) { onLogout(); return; }
+    setError(err instanceof Error ? err.message : fallback);
+  }
+
   useEffect(() => {
     loadNotes();
   }, []);
@@ -56,7 +62,7 @@ export default function NotesPage({ onLogout }: Props) {
       const data = await getNotes();
       setNotes(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load notes");
+      handleApiError(err, "Failed to load notes");
     } finally {
       setLoading(false);
     }
@@ -70,7 +76,7 @@ export default function NotesPage({ onLogout }: Props) {
       setSelectedId(created.id);
       setShowCreateNoteDialog(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create note");
+      handleApiError(err, "Failed to create note");
     }
   }
 
@@ -82,7 +88,7 @@ export default function NotesPage({ onLogout }: Props) {
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
       setShowEditNoteTitleDialog(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update note title");
+      handleApiError(err, "Failed to update note title");
     }
   }
 
@@ -93,7 +99,7 @@ export default function NotesPage({ onLogout }: Props) {
       setNotes((prev) => prev.filter((n) => n.id !== id));
       if (selectedId === id) setSelectedId(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete note");
+      handleApiError(err, "Failed to delete note");
     }
   }
 
@@ -108,7 +114,7 @@ export default function NotesPage({ onLogout }: Props) {
       setDraggableItems([...updated.contentItems]);
       setNewItemText("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add item");
+      handleApiError(err, "Failed to add item");
     }
   }
 
@@ -122,7 +128,7 @@ export default function NotesPage({ onLogout }: Props) {
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
       setDraggableItems((prev) => prev.map((c) => c.id === contentItemId ? { ...c, isStarred: !c.isStarred } : c));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to toggle star on item");
+      handleApiError(err, "Failed to toggle star on item");
     }
   }
 
@@ -141,7 +147,7 @@ export default function NotesPage({ onLogout }: Props) {
       setDraggableItems((prev) => prev.map((c) => c.id === editingItem.id ? { ...c, text } : c));
       setEditingItem(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update item");
+      handleApiError(err, "Failed to update item");
     }
   }
 
@@ -157,7 +163,7 @@ export default function NotesPage({ onLogout }: Props) {
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
     } catch (err) {
       setDraggableItems(selectedNote ? [...selectedNote.contentItems] : []);
-      setError(err instanceof Error ? err.message : "Failed to reorder items");
+      handleApiError(err, "Failed to reorder items");
     }
   }
 
@@ -175,7 +181,7 @@ export default function NotesPage({ onLogout }: Props) {
       );
       setDraggableItems((prev) => prev.filter((c) => c.id !== contentItemId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete item");
+      handleApiError(err, "Failed to delete item");
     }
   }
 

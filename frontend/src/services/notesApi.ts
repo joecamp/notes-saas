@@ -3,6 +3,13 @@ import { getToken } from "./authApi";
 
 const API_BASE = "http://localhost:5073/api";
 
+export class UnauthorizedError extends Error {
+  constructor() {
+    super("Session expired. Please log in again.");
+    this.name = "UnauthorizedError";
+  }
+}
+
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getToken();
   const response = await fetch(url, {
@@ -13,6 +20,8 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
+
+  if (response.status === 401) throw new UnauthorizedError();
 
   if (!response.ok) {
     const message = await response.text();
