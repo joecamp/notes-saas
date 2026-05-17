@@ -7,7 +7,7 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_PASSWORD: devpass
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: notesdb
     ports:
       - "5432:5432"       # Expose to host so you can still connect with psql/pgAdmin
@@ -32,27 +32,24 @@ services:
     ports:
       - "5073:8080"
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=notesdb;Username=postgres;Password=devpass"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=notesdb;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      JwtSettings__Secret: ${JWT_SECRET}
       Kestrel__Endpoints__Http__Url: "http://+:8080"
     depends_on:
       db:
         condition: service_healthy
 
-  # --- React / Vite dev server ---
-  # Built from the Dockerfile in frontend. Vite is configured to listen on
-  # 0.0.0.0 so requests from outside the container can reach it. The frontend
-  # makes API calls to http://localhost:5073 — those come from the browser on
-  # the host, not from inside the container, so localhost:5073 still resolves
-  # correctly via the backend's port mapping above.
+  # --- React (nginx, production build) ---
+  # Built from the Dockerfile in frontend. Stage 1 compiles the Vite app into
+  # static files, stage 2 serves them with nginx on port 80, mapped to 5173
+  # on the host so the dev URL stays the same. VITE_API_URL is baked into the
+  # bundle at build time via a Docker build arg.
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      args:
+        VITE_API_URL: http://localhost:5073/api
     depends_on:
       - backend
 
