@@ -1,6 +1,6 @@
 # .NET build artifacts
-backend/NotesApi/bin/
-backend/NotesApi/obj/
+backend/**/bin/
+backend/**/obj/
 
 # Visual Studio
 .vs/
