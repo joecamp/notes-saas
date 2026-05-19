@@ -31,6 +31,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifet
     [Fact]
     public async Task Register_WithValidData_ReturnsOk()
     {
+        // POST /api/auth/register with valid email and password, assert 200
         var response = await _client.PostAsJsonAsync("/api/auth/register", new
         {
             email = "newuser@example.com",
@@ -43,6 +44,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifet
     [Fact]
     public async Task Register_WithDuplicateEmail_ReturnsBadRequest()
     {
+        // Register the same email twice, assert second attempt returns 400
         var payload = new { email = "duplicate@example.com", password = "Test123!" };
         await _client.PostAsJsonAsync("/api/auth/register", payload);
 
@@ -54,6 +56,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifet
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsTokenInBody()
     {
+        // Register a user, login with correct credentials, assert 200 and token present in body
         var email = "loginuser@example.com";
         var password = "Test123!";
         await _client.PostAsJsonAsync("/api/auth/register", new { email, password });
@@ -68,6 +71,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifet
     [Fact]
     public async Task Login_WithWrongPassword_ReturnsUnauthorized()
     {
+        // Register a user, login with wrong password, assert 401
         await _client.PostAsJsonAsync("/api/auth/register", new
         {
             email = "wrongpass@example.com",
@@ -86,6 +90,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifet
     [Fact]
     public async Task GetNotes_WithoutToken_ReturnsUnauthorized()
     {
+        // GET /api/notes with no Authorization header, assert 401
         var response = await _client.GetAsync("/api/notes");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
