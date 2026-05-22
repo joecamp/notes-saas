@@ -172,4 +172,164 @@ public class NotesTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLife
         var deleteNoteResponse = await _client.DeleteAsync($"/api/notes/{createdNoteId}");
         Assert.Equal(HttpStatusCode.NotFound, deleteNoteResponse.StatusCode);
     }
+
+    [Fact]
+    public async Task PatchNote_UpdatesTitle()
+    {
+        // Authenticate, create a note
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "Note1" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        // PATCH /api/notes/{id} with new title
+        var patchNoteResponse = await _client.PatchAsJsonAsync($"/api/notes/{createdNoteId}", new { title = "NewTitle" });
+        Assert.True(patchNoteResponse.IsSuccessStatusCode);
+
+        // GET /api/notes/{id}, assert title matches updated value
+        var getNoteResponse = await _client.GetAsync($"/api/notes/{createdNoteId}");
+        var retrievedNote = await getNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        Assert.Equal("NewTitle", retrievedNote!.Title);
+    }
+
+    [Fact]
+    public async Task ReplaceNote_UpdatesTitleAndContentItems()
+    {
+        // Authenticate, create a note, add a content item
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "Note1" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        var addContentItem1Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem1" });
+        Assert.True(addContentItem1Response.IsSuccessStatusCode);
+
+        var addContentItem2Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem2" });
+        Assert.True(addContentItem2Response.IsSuccessStatusCode);
+
+        // PUT /api/notes/{id} with new title and different content items
+        var putNoteResponse = await _client.PutAsJsonAsync($"/api/notes/{createdNoteId}",
+            new
+            {
+                title = "New Title",
+                contentitems = new List<string> { "ReplacedItem1", "ReplacedItem2" }
+            });
+        Assert.True(putNoteResponse.IsSuccessStatusCode);
+
+        // Assert title and content items match the replacement values
+        var updatedNote = await putNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        Assert.Equal("New Title", updatedNote!.Title);
+        Assert.Equal(2, updatedNote.ContentItems.Count);
+        Assert.Equal("ReplacedItem1", updatedNote.ContentItems[0].Text);
+        Assert.Equal("ReplacedItem2", updatedNote.ContentItems[1].Text);
+    }
+
+    [Fact]
+    public async Task PatchContentItem_UpdatesText()
+    {
+        // Authenticate, create a note, add a content item
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "NewNote" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        var addItemResponse = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem" });
+        var noteWithContentItem = await addItemResponse.Content.ReadFromJsonAsync<NoteDto>();
+
+        // PATCH /api/notes/{noteId}/contentitems/{itemId} with new text
+        var contentItemId = noteWithContentItem!.ContentItems[0].Id;
+        var patchContentItemResponse = await _client.PatchAsJsonAsync($"/api/notes/{createdNoteId}/contentitems/{contentItemId}", new { text = "PatchedContentItem" });
+        Assert.True(patchContentItemResponse.IsSuccessStatusCode);
+
+        // Assert updated text appears in the response
+        var patchedNote = await patchContentItemResponse.Content.ReadFromJsonAsync<NoteDto>();
+        Assert.Equal("PatchedContentItem", patchedNote!.ContentItems[0].Text);
+    }
+
+    [Fact]
+    public async Task PatchContentItem_TogglesStarred()
+    {
+        // Authenticate, create a note
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "NewNote" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        // Add a content item
+        var addContentItemResponse = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem" });
+        var noteWithContentItem = await addContentItemResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var contentItemId = noteWithContentItem!.ContentItems[0].Id;
+
+        // PATCH /api/notes/{noteId}/contentitems/{itemId} with isStarred = true
+        var patchStarResponse = await _client.PatchAsJsonAsync($"/api/notes/{createdNoteId}/contentitems/{contentItemId}",
+            new { isStarred = true });
+        Assert.True(patchStarResponse.IsSuccessStatusCode);
+        var patchedNote = await patchStarResponse.Content.ReadFromJsonAsync<NoteDto>();
+
+        // Assert isStarred is true in the response
+        Assert.True(patchedNote!.ContentItems[0].IsStarred);
+    }
+
+    [Fact]
+    public async Task DeleteContentItem_RemovesItemAndReorders()
+    {
+        // Authenticate, create a note
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "NewNote" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        // Add three content items
+        var addContentItem1Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem1" });
+        var addContentItem2Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem2" });
+        var addContentItem3Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem3" });
+
+        // Get second content item's id
+        var noteWithItems = await addContentItem3Response.Content.ReadFromJsonAsync<NoteDto>();
+        var contentItem2Id = noteWithItems!.ContentItems[1].Id;
+
+        // DELETE the middle item (index 1)
+        var deleteContentItemResponse = await _client.DeleteAsync($"/api/notes/{createdNoteId}/contentitems/{contentItem2Id}");
+        Assert.True(deleteContentItemResponse.IsSuccessStatusCode);
+
+        // GET /api/notes/{id}, assert two items remain and Order values are 0 and 1
+        var getNoteResponse = await _client.GetAsync($"/api/notes/{createdNoteId}");
+        var updatedNote = await getNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var contentItems = updatedNote!.ContentItems;
+        Assert.Equal(2, contentItems.Count);
+        Assert.Equal("ContentItem1", contentItems[0].Text);
+        Assert.Equal(0, contentItems[0].Order);
+        Assert.Equal("ContentItem3", contentItems[1].Text);
+        Assert.Equal(1, contentItems[1].Order);
+    }
+
+    [Fact]
+    public async Task ReorderContentItems_UpdatesOrder()
+    {
+        // Authenticate, create a note, add two content items
+        await AuthenticateAsync();
+        var createNoteResponse = await _client.PostAsJsonAsync("/api/notes", new { title = "NewNote" });
+        var createdNote = await createNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        var createdNoteId = createdNote!.Id;
+
+        var addContentItem1Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem1" });
+        var addContentItem2Response = await _client.PostAsJsonAsync($"/api/notes/{createdNoteId}/contentitems", new { text = "ContentItem2" });
+        var noteWithItems = await addContentItem2Response.Content.ReadFromJsonAsync<NoteDto>();
+        var item1Id = noteWithItems!.ContentItems[0].Id;
+        var item2Id = noteWithItems.ContentItems[1].Id;
+
+        // PATCH /api/notes/{noteId}/contentitems/reorder with reversed order
+        var newOrder = new List<int> { item2Id, item1Id };
+        var reorderItemsResponse = await _client.PatchAsJsonAsync($"/api/notes/{createdNoteId}/contentitems/reorder",
+            new { orderedIds = newOrder });
+        Assert.True(reorderItemsResponse.IsSuccessStatusCode);
+
+        // GET /api/notes/{id}, assert items appear in the new order
+        var getNoteResponse = await _client.GetAsync($"/api/notes/{createdNoteId}");
+        var updatedNote = await getNoteResponse.Content.ReadFromJsonAsync<NoteDto>();
+        Assert.Equal("ContentItem2", updatedNote!.ContentItems[0].Text);
+        Assert.Equal(0, updatedNote.ContentItems[0].Order);
+        Assert.Equal("ContentItem1", updatedNote.ContentItems[1].Text);
+        Assert.Equal(1, updatedNote.ContentItems[1].Order);
+    }
 }
